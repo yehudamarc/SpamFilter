@@ -1,27 +1,39 @@
 import smtpd
 import asyncore
+import getData
 
 # Machine Learning code - analize the probability of email to by
 # spam by using Baye's Classifire
 
 # Training phase: Learning from data base
 
-trainData = [] # @TODO: get database for training
+trainData = getData.getData()
 SPAM = True
+trainPositive = {}
+trainNegative = {}
+positiveTotal = 0
+negativeTotal = 0
+pA = 0
+pNotA = 0
+
 #runs once on training data
 def train():
+    global pA
+    global pNotA
     total = 0
     numSpam = 0
     for email in trainData:
-        if email.label == SPAM:
+        if email[0] == SPAM:
             numSpam += 1
         total += 1
-        processEmail(email.body, email.label)
+        processEmail(email[1], email[0])
     pA = numSpam/total
     pNotA = (total - numSpam)/total
 
 #counts the words in a specific email
 def processEmail(body, label):
+    global positiveTotal
+    global negativeTotal
     for word in body:
         if label == SPAM:
             trainPositive[word] = trainPositive.get(word, 0) + 1
@@ -37,7 +49,7 @@ def conditionalEmail(body, spam):
     result = 1.0
     for word in body:
         result *= conditionalWord(word, spam) # con
-    return conditionalEmail
+    return result
 
 #gives the conditional probability p(B_i | A_x)
 def conditionalWord(word, spam):
@@ -47,10 +59,9 @@ def conditionalWord(word, spam):
 
 #classifies a new email as spam or not spam
 def classify(email):
-	return False
-    #isSpam = pA * conditionalEmail(email, True) # P (A | B)
-    #notSpam = pNotA * conditionalEmail(email, False) # P(¬A | B)
-    #return isSpam > notSpam
+    isSpam = pA * conditionalEmail(email, True) # P (A | B)
+    notSpam = pNotA * conditionalEmail(email, False) # P(¬A | B)
+    return isSpam > notSpam
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -70,13 +81,16 @@ class CustomSMTPServer(smtpd.SMTPServer):
         	print ('Message addressed to  :', rcpttos)
         	print ('Message length        :', len(data))
         	print ('Message               :', message_text)
-        	#subject = message_text.split('\n\n')[0]
-        	#body = message_text.split('\n\n')[1]
-        	#print ('Subject               :', subject)
-        	#print ('Body                  :', body)
 
-     
         return
+
+train()
+print('Test prints:')
+print ('positiveTotal: ', positiveTotal)
+print ('negativeTotal: ', negativeTotal)
+print ('Length of trainPositive: ', len(trainPositive))
+print ('Length of trainNegative: ', len(trainNegative))
+print ('Length of trainData: ', len(trainData))
 
 server = CustomSMTPServer(('127.0.0.1', 1025), None)
 
