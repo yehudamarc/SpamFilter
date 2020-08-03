@@ -34,19 +34,21 @@ def train():
 def processEmail(body, label):
     global positiveTotal
     global negativeTotal
+    body = body.split()
     for word in body:
-        if label == SPAM:
-            trainPositive[word] = trainPositive.get(word, 0) + 1
-            positiveTotal += 1
-        else:
-            trainNegative[word] = trainNegative.get(word, 0) + 1
-            negativeTotal += 1
+            if label == SPAM:
+                trainPositive[word] = trainPositive.get(word, 0) + 1
+                positiveTotal += 1
+            else:
+                trainNegative[word] = trainNegative.get(word, 0) + 1
+                negativeTotal += 1
 
 # Functions for analyzing given email:
 
 #gives the conditional probability p(B | A_x)
 def conditionalEmail(body, spam):
     result = 1.0
+    body = body.split()
     for word in body:
         result *= conditionalWord(word, spam) # con
     return result
@@ -54,8 +56,16 @@ def conditionalEmail(body, spam):
 #gives the conditional probability p(B_i | A_x)
 def conditionalWord(word, spam):
     if spam:
-       return trainPositive[word]/positiveTotal
-    return trainNegative[word]/negativeTotal
+        print('spam ', trainPositive.get(word,0))
+        if trainPositive.get(word,0) == 0:
+            return 1
+        else:
+            return trainPositive[word]/positiveTotal
+    if trainNegative.get(word,0) == 0:
+        return 1
+    else:
+        print('ham ', trainNegative.get(word,0))
+        return trainNegative[word]/negativeTotal
 
 #classifies a new email as spam or not spam
 def classify(email):
