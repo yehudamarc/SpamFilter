@@ -15,6 +15,8 @@ positiveTotal = 0
 negativeTotal = 0
 pA = 0
 pNotA = 0
+#Laplace smoothing factor
+alpha = 0.0001
 
 #runs once on training data
 def train():
@@ -50,22 +52,14 @@ def conditionalEmail(body, spam):
     result = 1.0
     body = body.split()
     for word in body:
-        result *= conditionalWord(word, spam) # con
+        result *= conditionalWord(word, spam)
     return result
 
 #gives the conditional probability p(B_i | A_x)
 def conditionalWord(word, spam):
     if spam:
-        print('spam ', trainPositive.get(word,0))
-        if trainPositive.get(word,0) == 0:
-            return 1
-        else:
-            return trainPositive[word]/positiveTotal
-    if trainNegative.get(word,0) == 0:
-        return 1
-    else:
-        print('ham ', trainNegative.get(word,0))
-        return trainNegative[word]/negativeTotal
+        return (trainPositive.get(word,0)+alpha)/(positiveTotal+alpha*positiveTotal)
+    return (trainNegative.get(word,0)+alpha)/(negativeTotal+alpha*negativeTotal)
 
 #classifies a new email as spam or not spam
 def classify(email):
@@ -101,6 +95,7 @@ print ('negativeTotal: ', negativeTotal)
 print ('Length of trainPositive: ', len(trainPositive))
 print ('Length of trainNegative: ', len(trainNegative))
 print ('Length of trainData: ', len(trainData))
+
 
 server = CustomSMTPServer(('127.0.0.1', 1025), None)
 

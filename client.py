@@ -3,7 +3,7 @@ import email.utils
 from email.mime.text import MIMEText
 
 # Create the message
-msg = MIMEText('This is the body of the message.')
+msg = MIMEText('linux.ie mailing list memberships reminder')
 msg['To'] = email.utils.formataddr(('Recipient', 'recipient@example.com'))
 msg['From'] = email.utils.formataddr(('Author', 'author@example.com'))
 msg['Subject'] = 'Simple test message'
